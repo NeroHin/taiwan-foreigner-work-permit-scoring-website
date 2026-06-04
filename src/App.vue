@@ -1,10 +1,11 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { baseDocuments, MAX_SCORE, officialLinks, PASSING_SCORE, purposes, scoringSections } from './data/scoring.js'
 import { calculateScore, getDocumentsForPurpose, getInitialAnswers, getNextSteps, getScoreStatus } from './scoring.js'
 
 const selectedPurpose = ref('estimate')
 const wantsNewPoints = ref(true)
+const showDocumentChecklist = ref(false)
 const answers = reactive(getInitialAnswers())
 
 const purpose = computed(() => purposes.find((item) => item.id === selectedPurpose.value))
@@ -13,12 +14,36 @@ const status = computed(() => getScoreStatus(score.value))
 const progress = computed(() => Math.min(Math.round((score.value / PASSING_SCORE) * 100), 100))
 const documents = computed(() => getDocumentsForPurpose(selectedPurpose.value, wantsNewPoints.value))
 const nextSteps = computed(() => getNextSteps(selectedPurpose.value, score.value, wantsNewPoints.value))
-const shouldShowDocuments = computed(() => selectedPurpose.value !== 'estimate')
+const hasCompletedScoring = computed(() => status.value.passed)
+const shouldShowDocuments = computed(() =>
+  hasCompletedScoring.value && showDocumentChecklist.value && selectedPurpose.value !== 'estimate'
+)
+const checklistButtonLabel = computed(() =>
+  selectedPurpose.value === 'estimate' ? '查看送件文件清單' : '顯示我的文件清單'
+)
 const selectedEvidence = computed(() =>
   scoringSections
     .filter((section) => Number(answers[section.id]) > 0)
     .map((section) => section.evidence)
 )
+
+function revealDocumentChecklist() {
+  if (selectedPurpose.value === 'estimate') {
+    selectedPurpose.value = 'apply'
+  }
+
+  showDocumentChecklist.value = true
+}
+
+watch(wantsNewPoints, () => {
+  showDocumentChecklist.value = false
+})
+
+watch(hasCompletedScoring, (isCompleted) => {
+  if (!isCompleted) {
+    showDocumentChecklist.value = false
+  }
+})
 </script>
 
 <template>
@@ -111,8 +136,20 @@ const selectedEvidence = computed(() =>
           </van-cell>
         </van-cell-group>
 
-        <van-cell-group v-if="shouldShowDocuments" inset class="summary-block">
+        <van-cell-group v-if="hasCompletedScoring && !shouldShowDocuments" inset class="summary-block checklist-prompt">
+          <van-cell title="需要文件清單嗎？">
+            <template #label>
+              <p>你已完成評分並達到門檻。要送件或先留存準備方向時，可以打開清單，畫面會保留勾選狀態供你截圖。</p>
+              <van-button type="primary" size="small" @click="revealDocumentChecklist">
+                {{ checklistButtonLabel }}
+              </van-button>
+            </template>
+          </van-cell>
+        </van-cell-group>
+
+        <van-cell-group v-if="shouldShowDocuments" inset class="summary-block checklist-block">
           <van-cell title="依用途整理的文件" />
+          <p class="screenshot-note">可勾選已備齊項目，完成後直接截圖作為留存清單。</p>
           <van-checkbox-group>
             <van-cell v-for="document in documents" :key="document" :title="document">
               <template #right-icon>
@@ -122,8 +159,8 @@ const selectedEvidence = computed(() =>
           </van-checkbox-group>
         </van-cell-group>
 
-        <van-cell-group v-else inset class="summary-block">
-          <van-cell title="文件先不打擾" label="你選的是快速估分。等你要送件時，再切換到準備送件查看完整清單。" />
+        <van-cell-group v-if="!hasCompletedScoring" inset class="summary-block">
+          <van-cell title="文件先不打擾" label="完成評分並達到 70 分後，再詢問你是否需要文件清單。" />
         </van-cell-group>
 
         <van-cell-group v-if="selectedEvidence.length" inset class="summary-block">

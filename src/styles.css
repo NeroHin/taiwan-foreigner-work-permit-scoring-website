@@ -196,6 +196,25 @@ h2 {
   overflow: hidden;
 }
 
+.checklist-prompt p,
+.screenshot-note {
+  margin: 0 0 12px;
+  color: oklch(0.42 0.018 205);
+}
+
+.checklist-prompt .van-button {
+  min-width: 132px;
+}
+
+.screenshot-note {
+  padding: 0 16px;
+  font-size: 0.92rem;
+}
+
+.checklist-block .van-cell:first-child {
+  padding-bottom: 8px;
+}
+
 .van-cell {
   background: transparent;
 }
