@@ -21,9 +21,20 @@ Optional Fastify server:
 npm run server
 ```
 
+## GitHub Pages
+
+GitHub Pages is supported because the production app is a static Vue build. The Fastify server is optional for local/API experimentation and is not required by the browser app.
+
+```bash
+npm run build:pages
+```
+
+The included GitHub Actions workflow publishes `dist/` on pushes to `main`. Keep production features client-side or backed by static files if the site should remain on free GitHub Pages hosting.
+
 ## Verification
 
 ```bash
 npm run build
 npm run test
+npm run test:e2e
 ```
