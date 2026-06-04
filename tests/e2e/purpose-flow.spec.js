@@ -7,12 +7,11 @@ test('purpose selection changes the visible workflow', async ({ page }) => {
   await expect(page.getByText('文件先不打擾')).toBeVisible()
 
   await page.getByTestId('purpose-apply').click()
-  await expect(page.getByText('依用途整理的文件')).toBeVisible()
-  await expect(page.getByText('申請書')).toBeVisible()
+  await expect(page.getByText('完成評分並達到 70 分後，再詢問你是否需要文件清單。')).toBeVisible()
 
   await page.getByTestId('purpose-renew').click()
   await expect(page.getByText('這次展延要加計或調整點數嗎？')).toBeVisible()
-  await expect(page.getByText('原聘僱許可函文號或影本')).toBeVisible()
+  await expect(page.getByText('完成評分並達到 70 分後，再詢問你是否需要文件清單。')).toBeVisible()
 })
 
 test('score updates immediately from selected answers', async ({ page }) => {
@@ -24,4 +23,22 @@ test('score updates immediately from selected answers', async ({ page }) => {
 
   await expect(page.getByText('已達 70 分門檻').first()).toBeVisible()
   await expect(page.getByText('70 / 200')).toBeVisible()
+})
+
+test('completed scoring asks before showing the document checklist', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByTestId('section-education').getByText('碩士學位').click()
+  await page.getByTestId('section-salary').getByText('月薪 40,000 至未達 47,971 元').click()
+  await page.getByTestId('section-mandarin').getByText('進階等級').click()
+
+  await expect(page.getByText('需要文件清單嗎？')).toBeVisible()
+  await expect(page.getByText('你已完成評分並達到門檻。')).toBeVisible()
+  await expect(page.getByText('依用途整理的文件')).toBeHidden()
+
+  await page.getByRole('button', { name: '查看送件文件清單' }).click()
+  await expect(page.getByTestId('purpose-apply')).toHaveClass(/active/)
+  await expect(page.getByText('依用途整理的文件')).toBeVisible()
+  await expect(page.getByText('申請書')).toBeVisible()
+  await expect(page.getByText('完成後直接截圖作為留存清單')).toBeVisible()
 })
