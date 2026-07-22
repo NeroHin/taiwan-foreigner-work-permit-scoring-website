@@ -15,21 +15,15 @@ npm install
 npm run dev
 ```
 
-Optional Fastify server:
-
-```bash
-npm run server
-```
-
 ## GitHub Pages
 
-GitHub Pages is supported because the production app is a static Vue build. The Fastify server is optional for local/API experimentation and is not required by the browser app.
+GitHub Pages is supported as a pure static Vue build. Build output is committed to `docs/` so the repository can use branch-based Pages without GitHub Actions.
 
 ```bash
 npm run build:pages
 ```
 
-The included GitHub Actions workflow publishes `dist/` on pushes to `main`. Keep production features client-side or backed by static files if the site should remain on free GitHub Pages hosting.
+Configure GitHub Pages to deploy from `main` / `docs`.
 
 ## Verification
 
